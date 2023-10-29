@@ -74,14 +74,14 @@ class Router {
         // event emitter for next() or errors?
     }
 
-    route = (req: IncomingMessage, res: OutgoingMessage): void => {
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        const routeDest = this.getRouteDestination(url.pathname);
-        if (routeDest.reqHandlers.USE) {
-            this.runHandlers(routeDest.reqHandlers.USE);
-        }
-        this.runHandlers(routeDest.reqHandlers[req.method]);
-    }
+    // route = (req: IncomingMessage, res: OutgoingMessage): void => {
+    //     const url = new URL(req.url, `http://${req.headers.host}`);
+    //     const routeDest = this.getRouteDestination(url.pathname);
+    //     if (routeDest.reqHandlers.USE) {
+    //         this.runHandlers(routeDest.reqHandlers.USE);
+    //     }
+    //     this.runHandlers(routeDest.reqHandlers[req.method]);
+    // }
 
 
     use = (pathname: Pathname, method: Middleware) => {
