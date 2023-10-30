@@ -8,7 +8,7 @@ const port = 3000;
 const server = http.createServer((req, res) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/html');
-
+	
 	if (req.url === '/') {
 		console.log("here1")
 		const renderedHtml = render('views/layout.pug');
