@@ -1,7 +1,6 @@
 import { IncomingMessage, OutgoingMessage } from "http";
 
-type RequestType = (
-    'USE'     | // middleware called upon every request to pathname
+type HttpMethod = (
     'GET'     |
     'POST'    |
     'PUT'     |
@@ -12,9 +11,11 @@ type RequestType = (
     'PATCH'
 );
 
-type Middleware = (req: IncomingMessage, res: OutgoingMessage) => void;
+type HandlerType = HttpMethod | 'USE';
 
-type RequestHandlers = Partial<{[T in RequestType]: Middleware[]}>;
+type ReqHandler = (req: IncomingMessage, res: OutgoingMessage) => void;
+
+type RequestHandlers = Partial<{[T in HandlerType]: ReqHandler[]}>;
 
 type RouteDestination = {
     reqHandlers: RequestHandlers
@@ -27,6 +28,8 @@ type Routes = {
 
 type Pathname =  `/${string}`;
 
+
+
 class Router {
 
     routes: Routes = {
@@ -37,7 +40,7 @@ class Router {
     };
 
     private getRouteDestination = (pathname: Pathname): RouteDestination => {
-        let routeDest: RouteDestination = this.routes['/'];
+        let routeDest = this.routes['/'];
         if (pathname === '/') return routeDest;
 
         const pathSegments: string[] = pathname.split('/'); // DOES NOT YET ACCOUNT FOR TRAILING SLASH, ENFORCE IN Pathname TYPE
@@ -59,65 +62,71 @@ class Router {
         return routeDest;
     }
 
-    private setRoute = (reqType: RequestType, pathname: Pathname, method: Middleware): void => {
+    private setRoute = (handlerType: HandlerType, pathname: Pathname, handler: ReqHandler): void => {
         const routeDest = this.getRouteDestination(pathname);
-        const methods: Middleware[] | undefined = routeDest.reqHandlers[reqType];
-        
-        if (methods) {
-            methods.push(method);
+        const handlers: ReqHandler[] | undefined = routeDest.reqHandlers[handlerType];
+
+        if (handlers) {
+            handlers.push(handler);
         } else {
-            routeDest.reqHandlers[reqType] = [method];
+            routeDest.reqHandlers[handlerType] = [handler];
         }
     }
 
-    private runHandlers = (handlers: Middleware[]): void => {
+    private runHandlers = (handlers: ReqHandler[], req: IncomingMessage, res: OutgoingMessage): void => {
         // event emitter for next() or errors?
     }
 
     // route = (req: IncomingMessage, res: OutgoingMessage): void => {
-    //     const url = new URL(req.url, `http://${req.headers.host}`);
-    //     const routeDest = this.getRouteDestination(url.pathname);
-    //     if (routeDest.reqHandlers.USE) {
-    //         this.runHandlers(routeDest.reqHandlers.USE);
+    //     // run general middleware first
+    //     if (req.url && req.method) {
+    //         const url = new URL(req.url, `http://${req.headers.host}`);
+    //         const routeDest = this.getRouteDestination(url.pathname);
+    //         if (routeDest.reqHandlers.USE) {
+    //             this.runHandlers(routeDest.reqHandlers.USE, req, res);
+    //         }
+    //         if (routeDest.reqHandlers[req.method]) {
+    //             this.runHandlers(routeDest.reqHandlers[req.method], req, res);
+    //         }
+            
     //     }
-    //     this.runHandlers(routeDest.reqHandlers[req.method]);
     // }
 
 
-    use = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('USE', pathname, method);
+    use = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('USE', pathname, handler);
     }
 
-    get = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('GET', pathname, method);
+    get = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('GET', pathname, handler);
     }
 
-    post = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('POST', pathname, method);
+    post = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('POST', pathname, handler);
     }
 
-    put = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('PUT', pathname, method);
+    put = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('PUT', pathname, handler);
     }
 
-    delete = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('DELETE', pathname, method);
+    delete = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('DELETE', pathname, handler);
     }
 
-    head = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('HEAD', pathname, method);
+    head = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('HEAD', pathname, handler);
     }
 
-    connect = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('CONNECT', pathname, method);
+    connect = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('CONNECT', pathname, handler);
     }
 
-    options = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('OPTIONS', pathname, method);
+    options = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('OPTIONS', pathname, handler);
     }
 
-    patch = (pathname: Pathname, method: Middleware) => {
-        this.setRoute('PATCH', pathname, method);
+    patch = (pathname: Pathname, handler: ReqHandler) => {
+        this.setRoute('PATCH', pathname, handler);
     }
 
 }
