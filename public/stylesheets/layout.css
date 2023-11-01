@@ -26,6 +26,13 @@ body {
     background-color: #1f1f1f;
 }
 
+.content {
+    display: flex;
+    flex-direction: column;
+    block-size: 100%;
+    background-color: #1d1d1d;
+}
+
 .site-header {
     display: flex;
     flex-direction: column;
@@ -40,6 +47,9 @@ body {
     padding-left: 5%;
     padding-right: 5%;
     background-color: #171717;
+    border-bottom-style: solid;
+    border-bottom-color: #8a8a8a;
+    border-bottom-width: 1px;
 }
 
 .logo {
@@ -70,10 +80,6 @@ body {
     inline-size: 50%;
     padding-left: 12px;
     padding-right: 12px;
-}
-
-li {
-    height: 100%;
 }
 
 .nav-link {

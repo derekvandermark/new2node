@@ -1,4 +1,4 @@
-import { IncomingMessage, OutgoingMessage, ServerResponse } from "http";
+import { IncomingMessage, ServerResponse } from "http";
 import { render } from "./render";
 
 type HttpMethod = (
@@ -37,7 +37,7 @@ type WildcardSegment = `:${string}`;
 class Router {
 
 
-    routes: Routes = {
+    private routes: Routes = {
         '/': {
             reqHandlers: {},
             subRoutes: {}
@@ -113,7 +113,7 @@ class Router {
     route = (req: IncomingMessage, res: ServerResponse): void => {
         const url = new URL(req.url as string, `http://${req.headers.host}`);
         const routeDest = this.getRouteDestination(url.pathname as Pathname);
-
+        
         if (routeDest) {
             const useHandler = routeDest.reqHandlers.USE;
             const reqHandler = routeDest.reqHandlers[req.method as HttpMethod];
@@ -163,5 +163,4 @@ class Router {
 
 }
 
-const router = new Router();
-export default router;
+export default Router;
