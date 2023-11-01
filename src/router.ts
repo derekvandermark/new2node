@@ -1,4 +1,5 @@
-import { IncomingMessage, OutgoingMessage } from "http";
+import { IncomingMessage, OutgoingMessage, ServerResponse } from "http";
+import { render } from "./render";
 
 type HttpMethod = (
     'GET'     |
@@ -13,9 +14,11 @@ type HttpMethod = (
 
 type HandlerType = HttpMethod | 'USE';
 
-type ReqHandler = (req: IncomingMessage, res: OutgoingMessage) => void;
+type ErrorHandler = (req: IncomingMessage, res: ServerResponse, statusCode: number, message: string) => void;
 
-type RequestHandlers = Partial<{[T in HandlerType]: ReqHandler[]}>;
+type ReqHandler = (req: IncomingMessage, res: ServerResponse, error: ErrorHandler) => void;
+
+type RequestHandlers = Partial<{[T in HandlerType]: ReqHandler}>;
 
 type RouteDestination = {
     reqHandlers: RequestHandlers
@@ -29,7 +32,6 @@ type Routes = {
 type Pathname =  `/${string}`;
 
 type WildcardSegment = `:${string}`;
-
 
 
 class Router {
@@ -76,11 +78,11 @@ class Router {
                 if (!routeDest.subRoutes[segment]) {
                     const wildcardSegment = this.getWildcardSegment(routeDest.subRoutes);
                     if (wildcardSegment) routeDest = routeDest.subRoutes[wildcardSegment];
+                    else return undefined;
                 } else {
                     routeDest = routeDest.subRoutes[segment];
                 }
             } 
-            
         }
 
         return routeDest;
@@ -89,41 +91,36 @@ class Router {
 
     private setReqHandler = (handlerType: HandlerType, pathname: Pathname, handler: ReqHandler): void => {
         const routeDest = this.setRouteDestination(pathname);
-        const handlers: ReqHandler[] | undefined = routeDest.reqHandlers[handlerType];
-
-        if (handlers) {
-            handlers.push(handler);
-        } else {
-            routeDest.reqHandlers[handlerType] = [handler];
-        }
+        routeDest.reqHandlers[handlerType] = handler;
     }
 
 
-    next = () => {
-
+    errorHandler: ErrorHandler = (req, res, statusCode, message) => {
+        res.statusCode = statusCode;
+        const errorPage = render('views/error.pug', {
+            title: 'Error',
+            message: message,
+            statusCode: statusCode
+        });
+        res.end(errorPage);
     }
 
 
-    private runHandlers = (req: IncomingMessage, res: OutgoingMessage, handlers: ReqHandler[]): void => {
-        for (const handler in handlers) {
-
-        }
-    }
-
+    // route can be refactored into 2 functions, one for general routing called on every request first, then the specific request routing second, within one encompassing function
 
     // Type assertions required due to IncomingMessage type being unable to tell if it was created by a Server or ClientRequest.
     // This function should only be called for IncomingMessage's created by a Server
-    route = (req: IncomingMessage, res: OutgoingMessage): void => {
+    route = (req: IncomingMessage, res: ServerResponse): void => {
         const url = new URL(req.url as string, `http://${req.headers.host}`);
         const routeDest = this.getRouteDestination(url.pathname as Pathname);
 
         if (routeDest) {
-            const useHandlers = routeDest.reqHandlers.USE;
-            const reqHandlers = routeDest.reqHandlers[req.method as HttpMethod];
-            useHandlers && this.runHandlers(req, res, useHandlers);
-            reqHandlers && this.runHandlers(req, res, reqHandlers);
+            const useHandler = routeDest.reqHandlers.USE;
+            const reqHandler = routeDest.reqHandlers[req.method as HttpMethod];
+            useHandler && useHandler(req, res, this.errorHandler);
+            reqHandler && reqHandler(req, res, this.errorHandler);
         } else {
-            // handle 404 error
+            this.errorHandler(req, res, 404, 'Page not found');
         }
     }
 
