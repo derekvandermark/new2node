@@ -28,6 +28,8 @@ type Routes = {
 
 type Pathname =  `/${string}`;
 
+type WildcardSegment = `:${string}`;
+
 
 
 class Router {
@@ -41,42 +43,27 @@ class Router {
     };
 
 
-    private setRouteDestination = (pathname: Pathname, settingRoute: boolean = false): RouteDestination => {
+    private setRouteDestination = (pathname: Pathname): RouteDestination => {
         let routeDest = this.routes['/'];
-        const pathSegments: string[] = pathname.split('/'); // DOES NOT YET ACCOUNT FOR TRAILING SLASH, ENFORCE IN Pathname TYPE
+        const pathSegments: string[] = pathname.split('/');
 
-        for (let i = 1; i < pathSegments.length; i++) {
-            const segment = pathSegments[i];
-            const nextRoute: RouteDestination | undefined = routeDest.subRoutes[segment];
-
-            if (!nextRoute) {
-                routeDest.subRoutes[segment] = {
-                    reqHandlers: {},
-                    subRoutes: {}
-                };
+        for (const segment in pathSegments) { 
+            if (segment !== '') {
+                const nextRoute: RouteDestination | undefined = routeDest.subRoutes[segment];
+                if (!nextRoute) routeDest.subRoutes[segment] = {reqHandlers: {}, subRoutes: {}};
+                routeDest = nextRoute;
             }
-
-            routeDest = nextRoute;
         }
 
         return routeDest;
     }
 
-    private srd = (pathname: Pathname): RouteDestination => {
-        let routeDest = this.routes['/'];
-        const pathSegments: string[] = pathname.split('/');
 
-        for (const segment in pathSegments) {
-            const nextRoute: RouteDestination | undefined = routeDest.subRoutes[segment];
-            
-            if (segment !== '') {
-                if (!nextRoute) routeDest.subRoutes[segment] = {reqHandlers: {}, subRoutes: {}};
-            }
-
-            routeDest = nextRoute;
+    private getWildcardSegment = (subRoutes: Routes): WildcardSegment | undefined => {
+        const routeKeys = Object.keys(subRoutes);
+        for (const key in routeKeys) {
+            if (key[0] === ':') return key as WildcardSegment;
         }
-
-        return routeDest;
     }
 
 
@@ -85,48 +72,23 @@ class Router {
         const pathSegments: string[] = pathname.split('/');
 
         for (const segment in pathSegments) {
-            if (segment !== '') routeDest = routeDest.subRoutes[segment];
+            if (segment !== '') {
+                if (!routeDest.subRoutes[segment]) {
+                    const wildcardSegment = this.getWildcardSegment(routeDest.subRoutes);
+                    if (wildcardSegment) routeDest = routeDest.subRoutes[wildcardSegment];
+                } else {
+                    routeDest = routeDest.subRoutes[segment];
+                }
+            } 
+            
         }
 
         return routeDest;
     }
 
 
-    // private grdAb = (pathname: Pathname): RouteDestination | undefined => {
-    //     const callback = (segment: string, routeDest: RouteDestination) => {
-    //         return routeDest.subRoutes[segment];
-    //     }
-
-    //     return this.traverseRoutes(pathname, callback);
-    // }
-
-    // private srdAb = (pathname: Pathname): RouteDestination => {
-    //     const callback = (segment: string, routeDest: RouteDestination) => {
-    //         const nextRoute = routeDest.subRoutes[segment];
-    //         if (!nextRoute) {
-    //             routeDest.subRoutes[segment] = {reqHandlers: {}, subRoutes: {}};
-    //         }
-    //         return routeDest;
-    //     }
-
-    //     return this.traverseRoutes(pathname, callback);
-    // }
-
-
-    // private traverseRoutes = (pathname: Pathname, callback: (segment: string, routeDest: RouteDestination) => RouteDestination) => {
-    //     let routeDest = this.routes['/'];
-    //     const pathSegments: string[] = pathname.split('/');
-
-    //     for (const segment in pathSegments) {
-    //         if (segment !== '') routeDest = callback(segment, routeDest);
-    //     }
-
-    //     return routeDest;
-    // }
-
-
-    private setRoute = (handlerType: HandlerType, pathname: Pathname, handler: ReqHandler): void => {
-        const routeDest = this.setRouteDestination(pathname, true);
+    private setReqHandler = (handlerType: HandlerType, pathname: Pathname, handler: ReqHandler): void => {
+        const routeDest = this.setRouteDestination(pathname);
         const handlers: ReqHandler[] | undefined = routeDest.reqHandlers[handlerType];
 
         if (handlers) {
@@ -137,60 +99,69 @@ class Router {
     }
 
 
-    private runHandlers = (handlers: ReqHandler[], req: IncomingMessage, res: OutgoingMessage): void => {
-        // event emitter for next() or errors?
+    next = () => {
+
     }
 
 
+    private runHandlers = (req: IncomingMessage, res: OutgoingMessage, handlers: ReqHandler[]): void => {
+        for (const handler in handlers) {
+
+        }
+    }
+
+
+    // Type assertions required due to IncomingMessage type being unable to tell if it was created by a Server or ClientRequest.
+    // This function should only be called for IncomingMessage's created by a Server
     route = (req: IncomingMessage, res: OutgoingMessage): void => {
-        if (req.url && req.method) {
-            const url = new URL(req.url, `http://${req.headers.host}`);
-            const routeDest = this.getRouteDestination(url.pathname as Pathname);
-            if (routeDest.reqHandlers.USE) {
-                this.runHandlers(routeDest.reqHandlers.USE, req, res);
-            }
-            if (routeDest.reqHandlers[req.method]) {
-                this.runHandlers(routeDest.reqHandlers[req.method], req, res);
-            }
-            
+        const url = new URL(req.url as string, `http://${req.headers.host}`);
+        const routeDest = this.getRouteDestination(url.pathname as Pathname);
+
+        if (routeDest) {
+            const useHandlers = routeDest.reqHandlers.USE;
+            const reqHandlers = routeDest.reqHandlers[req.method as HttpMethod];
+            useHandlers && this.runHandlers(req, res, useHandlers);
+            reqHandlers && this.runHandlers(req, res, reqHandlers);
+        } else {
+            // handle 404 error
         }
     }
 
 
     use = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('USE', pathname, handler);
+        this.setReqHandler('USE', pathname, handler);
     }
 
     get = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('GET', pathname, handler);
+        this.setReqHandler('GET', pathname, handler);
     }
 
     post = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('POST', pathname, handler);
+        this.setReqHandler('POST', pathname, handler);
     }
 
     put = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('PUT', pathname, handler);
+        this.setReqHandler('PUT', pathname, handler);
     }
 
     delete = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('DELETE', pathname, handler);
+        this.setReqHandler('DELETE', pathname, handler);
     }
 
     head = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('HEAD', pathname, handler);
+        this.setReqHandler('HEAD', pathname, handler);
     }
 
     connect = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('CONNECT', pathname, handler);
+        this.setReqHandler('CONNECT', pathname, handler);
     }
 
     options = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('OPTIONS', pathname, handler);
+        this.setReqHandler('OPTIONS', pathname, handler);
     }
 
     patch = (pathname: Pathname, handler: ReqHandler) => {
-        this.setRoute('PATCH', pathname, handler);
+        this.setReqHandler('PATCH', pathname, handler);
     }
 
 }
