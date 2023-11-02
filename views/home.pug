@@ -1,4 +1,10 @@
 extends layout 
 
+block append stylesheets 
+    link(rel='stylesheet' href='public/stylesheets/home.css')
+
 block content   
-    h1 Yo
+    div(class='container')
+        h1 Welcome
+        p An introduction to Node.js for programmers new to server-side development.
+        button(class='start-learning') Start Learning

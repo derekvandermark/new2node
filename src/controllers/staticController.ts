@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { render } from "../render";
+import { render } from "../servable";
 
 // duplicate types, need to be refactored into separate file
 

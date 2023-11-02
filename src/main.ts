@@ -1,7 +1,7 @@
 import http from 'http';
+import path from 'path';
 import router from './routes/routes';
-import { render } from './render';
-const fs = require('node:fs');
+import { render, serveStaticFile } from './servable';
 
 const hostname = '127.0.0.1';
 const port = 3000;
@@ -9,9 +9,17 @@ const port = 3000;
 const server = http.createServer((req, res) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/html');
+	console.log(req.url)
+	
 
-	router.route(req, res);
-
+	if (req.url) {
+		const url = new URL(req.url, `http://${req.headers.host}`);
+		if (path.extname(url.pathname)) {
+			serveStaticFile(res, url.pathname);
+		} else {
+			router.route(req, res);
+		}
+	} 
 	
 	// if (req.url === '/') {
 	// 	console.log("here1")

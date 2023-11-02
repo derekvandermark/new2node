@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { render } from "./render";
+import { render } from "./servable";
 
 type HttpMethod = (
     'GET'     |
@@ -49,7 +49,7 @@ class Router {
         let routeDest = this.routes['/'];
         const pathSegments: string[] = pathname.split('/');
 
-        for (const segment in pathSegments) { 
+        for (const segment of pathSegments) { 
             if (segment !== '') {
                 const nextRoute: RouteDestination | undefined = routeDest.subRoutes[segment];
                 if (!nextRoute) routeDest.subRoutes[segment] = {reqHandlers: {}, subRoutes: {}};
@@ -63,7 +63,7 @@ class Router {
 
     private getWildcardSegment = (subRoutes: Routes): WildcardSegment | undefined => {
         const routeKeys = Object.keys(subRoutes);
-        for (const key in routeKeys) {
+        for (const key of routeKeys) {
             if (key[0] === ':') return key as WildcardSegment;
         }
     }
@@ -73,7 +73,7 @@ class Router {
         let routeDest = this.routes['/'];
         const pathSegments: string[] = pathname.split('/');
 
-        for (const segment in pathSegments) {
+        for (const segment of pathSegments) {
             if (segment !== '') {
                 if (!routeDest.subRoutes[segment]) {
                     const wildcardSegment = this.getWildcardSegment(routeDest.subRoutes);

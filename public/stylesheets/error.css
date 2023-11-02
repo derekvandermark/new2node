@@ -1,0 +1,27 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    block-size: 100%;
+}
+
+.error-container {
+    display: flex;
+    flex-direction: column;
+}
+
+h1 {
+    font-family: Arial, Helvetica, sans-serif;
+    color: white
+}
+
+.status-code {
+    font-size: 200px;
+}
+.message {
+    font-size: 80px;
+    margin-bottom: 150px
+}
+
+
