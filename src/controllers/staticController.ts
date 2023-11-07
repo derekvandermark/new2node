@@ -1,13 +1,13 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { render } from "../servable";
-
-// duplicate types, need to be refactored into separate file
-
-type ErrorHandler = (req: IncomingMessage, res: ServerResponse, statusCode: number, message: string) => void;
-
-type ReqHandler = (req: IncomingMessage, res: ServerResponse, error: ErrorHandler) => void;
+import { ReqHandler } from "../router/types";
 
 export const get_home: ReqHandler = (req, res, error) => {
-    const homePage = render('views/home.pug', { title: 'Home' });
+    const homePage = render('views/home.pug', { title: 'new2node' });
     res.end(homePage);
+}
+
+export const get_test: ReqHandler = (req, res, error) => {
+    const testPage = render('views/test.pug', {title: 'test'});
+    res.end(testPage);
 }

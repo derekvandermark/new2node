@@ -1,3 +1,31 @@
+@font-face {
+    font-family: 'alluraregular';
+    src: url('../fonts/allura/allura-regular-webfont.woff2') format('woff2'),
+         url('../fonts/allura/allura-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'droid_sansbold';
+    src: url('../fonts/webfontkit-droid-sans/droidsans-bold-webfont.woff2') format('woff2'),
+         url('../fonts/webfontkit-droid-sans/droidsans-bold-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'droid_sansregular';
+    src: url('../fonts/webfontkit-droid-sans/droidsans-webfont.woff2') format('woff2'),
+         url('../fonts/webfontkit-droid-sans/droidsans-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+
 html {
     box-sizing: border-box;
 }

@@ -1,38 +1,6 @@
-import { IncomingMessage, ServerResponse } from "http";
-import { render } from "./servable";
-
-type HttpMethod = (
-    'GET'     |
-    'POST'    |
-    'PUT'     |
-    'DELETE'  |
-    'HEAD'    |
-    'CONNECT' |
-    'OPTIONS' |
-    'PATCH'
-);
-
-type HandlerType = HttpMethod | 'USE';
-
-type ErrorHandler = (req: IncomingMessage, res: ServerResponse, statusCode: number, message: string) => void;
-
-type ReqHandler = (req: IncomingMessage, res: ServerResponse, error: ErrorHandler) => void;
-
-type RequestHandlers = Partial<{[T in HandlerType]: ReqHandler}>;
-
-type RouteDestination = {
-    reqHandlers: RequestHandlers
-    subRoutes: Routes
-}
-
-type Routes = {
-    [pathSegment: string]: RouteDestination
-}
-
-type Pathname =  `/${string}`;
-
-type WildcardSegment = `:${string}`;
-
+import { render } from "../servable";
+import { HttpMethod, HandlerType, ErrorHandler, ReqHandler, RequestHandlers, 
+    RouteDestination, Routes, Pathname, WildcardSegment } from "./types";
 
 class Router {
 
@@ -51,9 +19,8 @@ class Router {
 
         for (const segment of pathSegments) { 
             if (segment !== '') {
-                const nextRoute: RouteDestination | undefined = routeDest.subRoutes[segment];
-                if (!nextRoute) routeDest.subRoutes[segment] = {reqHandlers: {}, subRoutes: {}};
-                routeDest = nextRoute;
+                if (!routeDest.subRoutes[segment]) routeDest.subRoutes[segment] = {reqHandlers: {}, subRoutes: {}};
+                routeDest = routeDest.subRoutes[segment];
             }
         }
 
