@@ -15,6 +15,7 @@ const mimeExt = {
     '.html':  'text/html',
     '.js':    'text/javascript',
     '.jpeg':  'image/jpeg',
+    '.jpg':   'image/jpeg',
     '.png':   'image/png',
     '.woff':  'font/woff',
     '.woff2': 'font/woff2'
@@ -29,9 +30,10 @@ export function validatePath(res: ServerResponse, pathname: string): boolean {
     // console.log(publicDir)
     // console.log('Here', path.resolve(pathname));
 
-    
+
     console.log(pathname.split('/'))
     return pathname.split('/')[1] === 'public';
+    //return path.extname(pathname) === '.html';
 }
 
 export function serveStaticFile(res: ServerResponse, pathname: string) {

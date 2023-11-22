@@ -7,6 +7,11 @@ export const get_home: ReqHandler = (req, res, error) => {
     res.end(homePage);
 }
 
+export const get_references: ReqHandler = (req, res, error) => {
+    const referencesPage = render('views/references.pug', { title: 'References | new2node' });
+    res.end(referencesPage);
+}
+
 export const get_test: ReqHandler = (req, res, error) => {
     const testPage = render('views/test.pug', {title: 'test'});
     res.end(testPage);

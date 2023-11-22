@@ -83,9 +83,9 @@ class Router {
         const routeDest = this.getRouteDestination(url.pathname as Pathname);
         
         if (routeDest) {
-            const useHandler = routeDest.reqHandlers.USE;
+            const middleware = routeDest.reqHandlers.MIDDLEWARE;
             const reqHandler = routeDest.reqHandlers[req.method as HttpMethod];
-            useHandler && useHandler(req, res, this.errorHandler);
+            middleware && middleware(req, res, this.errorHandler);
             reqHandler && reqHandler(req, res, this.errorHandler);
         } else {
             this.errorHandler(req, res, 404, 'Page not found');
@@ -93,8 +93,8 @@ class Router {
     }
 
 
-    use = (pathname: Pathname, handler: ReqHandler) => {
-        this.setReqHandler('USE', pathname, handler);
+    middleware = (pathname: Pathname, handler: ReqHandler) => {
+        this.setReqHandler('MIDDLEWARE', pathname, handler);
     }
 
     get = (pathname: Pathname, handler: ReqHandler) => {

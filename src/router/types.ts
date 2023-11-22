@@ -11,7 +11,7 @@ export type HttpMethod = (
     'PATCH'
 );
 
-export type HandlerType = HttpMethod | 'USE';
+export type HandlerType = HttpMethod | 'MIDDLEWARE';
 
 export type ErrorHandler = (req: IncomingMessage, res: ServerResponse, statusCode: number, message: string) => void;
 

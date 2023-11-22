@@ -1,0 +1,44 @@
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    justify-content: flex-start;
+    align-items: center;
+    block-size: 100%;
+    inline-size: 70%;
+    padding-top: 80px;
+    padding-bottom: 40px;
+}
+
+h1, h2, p {
+    inline-size: 100%;
+    text-align: left;
+    font-family: Arial, Helvetica, sans-serif;
+    color: white;
+}
+
+.page-title {
+    text-align: left;
+    font-size: 72px;
+}
+
+.description {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 22px;
+    color: white;
+    margin-top: 20px;
+    line-height: 190%;
+}
+
+.material-type {
+    font-size: 36px;
+    margin-top: 80px;
+}
+
+.citation-list {
+
+}
+
+.citation-item {
+
+}

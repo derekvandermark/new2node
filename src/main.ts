@@ -20,10 +20,14 @@ const server = http.createServer((req, res) => {
 		// 	fs.createReadStream(file.substring(1)).pipe(res);
 		// } else
 		if (path.extname(url.pathname)) {
+			// const test = url.pathname + url.searchParams.get('path')
+			// console.log(test)
+			// const testPath = validatePath(res, test);
 			
 			const pathValid = validatePath(res, url.pathname);
 			if (pathValid) {
 				serveStaticFile(res, url.pathname);
+				//serveStaticFile(res, test.substring(1))
 				res.on('finish', () => {
 					res.end();
 				});

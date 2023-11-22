@@ -1,4 +1,4 @@
-import { get_home, get_test } from "../controllers/staticController";
+import { get_home, get_references, get_test } from "../controllers/staticController";
 import Router from "./router";
 
 const router = new Router();
@@ -7,6 +7,8 @@ const router = new Router();
 router.get('/', get_home);
 
 router.get('/test', get_test);
+
+router.get('/references', get_references);
 
 export default router;
 
